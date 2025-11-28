@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from data.dbHelpDesk import db, Ticket, User
-from schemas.ticket import TicketCreateSchema
+from database.dbHelpDesk import db, Ticket, User
+from src.schemas.tickets import TicketCreateSchema
 
 tickets_bp = Blueprint('tickets_bp', __name__)
 

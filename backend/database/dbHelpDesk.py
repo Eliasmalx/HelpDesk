@@ -28,7 +28,7 @@ class Ticket(db.Model):
         nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc),
         nullable=False, onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
-        nullable=False)
+    )
 
     created_by = db.relationship('User', foreign_keys=[created_by_id], backref='my_tickets')
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id], backref='assigned_tickets')
