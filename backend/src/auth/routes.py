@@ -3,6 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from database.dbHelpDesk import db, User
 
+
 bcrypt = Bcrypt()
 auth_bp = Blueprint('auth_bp', __name__)
 

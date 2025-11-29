@@ -31,6 +31,9 @@ def create_ticket():
 def list_tickets():
     current_user_email = get_jwt_identity()
     user = User.query.filter_by(email=current_user_email).first()
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
     tickets = Ticket.query.filter_by(created_by_id=user.id).all()
     tickets_data = [
         {
@@ -38,7 +41,7 @@ def list_tickets():
             'title': t.title,
             'status': t.status,
             'priority': t.priority,
-            'created_at': t.created_at
+            'created_at': t.created_at.isoformat()
         }
         for t in tickets
     ]
