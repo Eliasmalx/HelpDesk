@@ -4,11 +4,14 @@ from src.auth.routes import auth_bp
 from src.tickets.routes import tickets_bp
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
-# from flask_cors import CORS
+from flask_cors import CORS
+
+
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 import os
 from urllib.parse import quote_plus

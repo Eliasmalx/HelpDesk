@@ -1,0 +1,8 @@
+/* Reutiliza estilos generales del login y añade detalles de éxito */
+@import './Login.css';
+
+.auth-success {
+  color: #4ade80;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
