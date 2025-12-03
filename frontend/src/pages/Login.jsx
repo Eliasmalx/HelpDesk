@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
-
-const API_URL = 'http://localhost:5000';
+import apiClient from '../api/apiClient';
 
 function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -15,32 +14,15 @@ function Login({ onLoginSuccess }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Error al iniciar sesión');
-      } else {
-        // Guarda el token en localStorage (MVP)
-        localStorage.setItem('access_token', data.access_token);
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        }
-      }
+      const data = await apiClient.login(email, password);
+      localStorage.setItem('access_token', data.access_token);
+      if (onLoginSuccess) onLoginSuccess();
     } catch (err) {
-      setError('No se pudo conectar con el servidor');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="auth-container">
       <div className="auth-card">

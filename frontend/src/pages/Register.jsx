@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import './Register.css';
-
-const API_URL = 'http://localhost:5000';
+import apiClient from '../api/apiClient';
 
 function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role] = useState('user'); // fijo por ahora
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -24,26 +22,13 @@ function Register() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, role }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Error al registrar usuario');
-      } else {
-        setSuccess('Cuenta creada correctamente. Ya puedes iniciar sesión.');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-      }
+      await apiClient.register(email, password, 'user');
+      setSuccess('Cuenta creada correctamente. Ya puedes iniciar sesión.');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
-      setError('No se pudo conectar con el servidor');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
