@@ -41,7 +41,8 @@ def list_tickets():
             'title': t.title,
             'status': t.status,
             'priority': t.priority,
-            'created_at': t.created_at.isoformat()
+            'created_at': t.created_at.isoformat(),
+            'description': t.description
         }
         for t in tickets
     ]
