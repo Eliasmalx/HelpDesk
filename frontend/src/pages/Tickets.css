@@ -1,0 +1,138 @@
+.tickets-container {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f9fafb;
+  padding: 24px;
+}
+
+.tickets-header {
+  max-width: 960px;
+  margin: 0 auto 16px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tickets-header h1 {
+  font-size: 1.6rem;
+}
+
+.logout-button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: #f9fafb;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, transform 0.05s;
+}
+
+.logout-button:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.tickets-card {
+  max-width: 960px;
+  margin: 0 auto;
+  background: #1f2937;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.tickets-error {
+  color: #f97373;
+  margin-bottom: 12px;
+}
+
+.tickets-empty {
+  color: #9ca3af;
+}
+
+.tickets-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.tickets-table th,
+.tickets-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #374151;
+  text-align: left;
+}
+
+.tickets-table th {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.tickets-table tr:hover {
+  background: #111827;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Estado */
+.badge-status-open {
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+}
+
+.badge-status-in_progress {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.badge-status-closed {
+  background: rgba(22, 163, 74, 0.15);
+  color: #4ade80;
+}
+
+/* Prioridad */
+.badge-priority-low {
+  background: rgba(34, 197, 94, 0.15);
+  color: #6ee7b7;
+}
+
+.badge-priority-medium {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+.badge-priority-high {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .tickets-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .tickets-container {
+    padding: 16px;
+  }
+
+  .tickets-card {
+    padding: 16px;
+  }
+
+  .tickets-table th:nth-child(1),
+  .tickets-table td:nth-child(1) {
+    display: none; /* ocultar ID en móvil */
+  }
+}

@@ -6,12 +6,16 @@ import Tickets from './pages/Tickets';
 
 function LoginWithRedirect() {
   const navigate = useNavigate();
-
-  const handleLoginSuccess = () => {
-    navigate('/tickets'); // o la ruta de dashboard que definas
-  };
-
+  const handleLoginSuccess = () => navigate('/tickets');
   return <Login onLoginSuccess={handleLoginSuccess} />;
+}
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 }
 
 function App() {
@@ -21,7 +25,15 @@ function App() {
         <Route path="/login" element={<LoginWithRedirect />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="tickets" element={<Tickets />} />
+        <Route
+          path="/tickets"
+          element={
+            <ProtectedRoute>
+              <Tickets />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Navigate to="/tickets" replace />} />
       </Routes>
     </BrowserRouter>
   );
