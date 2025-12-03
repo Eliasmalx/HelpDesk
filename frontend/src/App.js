@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Tickets from './pages/Tickets';
+import CreateTicket from './pages/CreateTicket';
 
 function LoginWithRedirect() {
   const navigate = useNavigate();
@@ -30,6 +31,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Tickets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tickets/new"
+          element={
+            <ProtectedRoute>
+              <CreateTicket />
             </ProtectedRoute>
           }
         />

@@ -8,6 +8,7 @@ function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -39,6 +40,10 @@ function Tickets() {
     navigate('/login');
   };
 
+  const createTicket = () => {
+    navigate('/tickets/new');
+  }
+
   const formatDate = (isoString) => {
     if (!isoString) return '';
     const d = new Date(isoString);
@@ -63,6 +68,9 @@ function Tickets() {
     <div className="tickets-container">
       <header className="tickets-header">
         <h1>Mis Tickets</h1>
+        <button className='create-button' onClick={createTicket}>
+          Crear Ticket
+        </button>
         <button className="logout-button" onClick={handleLogout}>
           Cerrar sesión
         </button>
@@ -86,24 +94,44 @@ function Tickets() {
             </thead>
             <tbody>
               {tickets.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.id} onClick={() => setSelectedTicket(t)} className="ticket-row-clickable">
                   <td>{t.id}</td>
                   <td>{t.title}</td>
                   <td>
-                    <span className={`badge badge-status-${t.status || 'open'}`}>
-                      {t.status}
-                    </span>
+                    <span className={`badge badge-status-${t.status || 'open'}`}>{t.status}</span>
                   </td>
                   <td>
-                    <span className={`badge badge-priority-${t.priority || 'medium'}`}>
-                      {t.priority}
-                    </span>
+                    <span className={`badge badge-priority-${t.priority || 'medium'}`}>{t.priority}</span>
                   </td>
                   <td>{formatDate(t.created_at)}</td>
                 </tr>
               ))}
             </tbody>
+            {selectedTicket && (
+              <div className="modal-backdrop" onClick={() => setSelectedTicket(null)}>
+                <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+                  <h2>{selectedTicket.title}</h2>
+                  <p className="modal-meta">
+                    Estado: <span className={`badge badge-status-${selectedTicket.status || 'open'}`}>{selectedTicket.status}</span>{' '}
+                    · Prioridad:{' '}
+                    <span className={`badge badge-priority-${selectedTicket.priority || 'medium'}`}>
+                      {selectedTicket.priority}
+                    </span>
+                    <br />
+                    Creado: {formatDate(selectedTicket.created_at)}
+                  </p>
+                  <div className="modal-description">
+                    {selectedTicket.description || 'Sin descripción'}
+                  </div>
+                  <button className="primary-button" onClick={() => setSelectedTicket(null)}>
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            )}
+
           </table>
+
         )}
       </div>
     </div>

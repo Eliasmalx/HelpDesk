@@ -34,6 +34,23 @@
   transform: translateY(-1px);
 }
 
+.create-button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: #f9fafb;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, transform 0.05s;
+  margin-right: 12px;
+}
+.create-button:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
 .tickets-card {
   max-width: 960px;
   margin: 0 auto;
@@ -136,3 +153,54 @@
     display: none; /* ocultar ID en móvil */
   }
 }
+
+.ticket-row-clickable {
+  cursor: pointer;
+}
+
+.ticket-row-clickable:hover {
+  background: #020617;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 40;
+}
+
+.modal-card {
+  background: #020617;
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+}
+
+.modal-card h2 {
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+}
+
+.modal-meta {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+.modal-description {
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  margin-bottom: 16px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
