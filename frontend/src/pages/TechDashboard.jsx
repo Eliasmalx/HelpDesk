@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
-import './Tickets.css';
+import './TechDashboard.css';
 
-function Tickets() {
+function TechDashboard() {
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [userInfo, setUserInfo] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   useEffect(() => {
@@ -18,13 +17,9 @@ function Tickets() {
       return;
     }
 
-    const fetchData = async () => {
+    const fetchTickets = async () => {
       try {
-        // 1) datos del usuario (incluye role)
-        const me = await apiClient.getMe();
-        setUserInfo(me);
-
-        // 2) tickets según rol (el backend decide qué devolver)
+        // asume que el backend, si el usuario es técnico/admin, devuelve todos los tickets
         const data = await apiClient.getTickets();
         setTickets(data);
       } catch (err) {
@@ -38,16 +33,12 @@ function Tickets() {
       }
     };
 
-    fetchData();
+    fetchTickets();
   }, [navigate]);
 
   const handleLogout = () => {
     apiClient.logout();
     navigate('/login');
-  };
-
-  const handleNewTicket = () => {
-    navigate('/tickets/new');
   };
 
   const formatDate = (isoString) => {
@@ -64,49 +55,34 @@ function Tickets() {
 
   if (loading) {
     return (
-      <div className="tickets-container">
-        <div className="tickets-card">Cargando tickets...</div>
+      <div className="tech-container">
+        <div className="tech-card">Cargando cola de tickets...</div>
       </div>
     );
   }
 
   return (
-    <div className="tickets-container">
-      <header className="tickets-header">
-        <div>
-          <h1>Tickets</h1>
-          {userInfo && (
-            <p className="tickets-subtitle">
-              Sesión: {userInfo.email} · Rol: <strong>{userInfo.role}</strong>
-            </p>
-          )}
-        </div>
-
-        <div className="tickets-header-actions">
-          {userInfo?.role === 'user' && (
-            <button className="primary-button" onClick={handleNewTicket}>
-              Nuevo ticket
-            </button>
-          )}
-          <button className="logout-button" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
-        </div>
+    <div className="tech-container">
+      <header className="tech-header">
+        <h1>Cola de Tickets (Técnico)</h1>
+        <button className="logout-button" onClick={handleLogout}>
+          Cerrar sesión
+        </button>
       </header>
 
-      <div className="tickets-card">
+      <div className="tech-card">
         {error && <p className="tickets-error">{error}</p>}
 
         {tickets.length === 0 ? (
-          <p className="tickets-empty">No hay tickets para mostrar.</p>
+          <p className="tickets-empty">No hay tickets en la cola.</p>
         ) : (
           <table className="tickets-table">
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Título</th>
-                {userInfo?.role !== 'user' && <th>Creado por</th>}
-                {userInfo?.role !== 'user' && <th>Asignado a</th>}
+                <th>Creado por</th>
+                <th>Asignado a</th>
                 <th>Estado</th>
                 <th>Prioridad</th>
                 <th>Creado</th>
@@ -121,12 +97,8 @@ function Tickets() {
                 >
                   <td>{t.id}</td>
                   <td>{t.title}</td>
-                  {userInfo?.role !== 'user' && (
-                    <>
-                      <td>{t.created_by_email || '-'}</td>
-                      <td>{t.assigned_to_email || '-'}</td>
-                    </>
-                  )}
+                  <td>{t.created_by_email || '-'}</td>
+                  <td>{t.assigned_to_email || '-'}</td>
                   <td>
                     <span className={`badge badge-status-${t.status || 'open'}`}>
                       {t.status}
@@ -150,12 +122,8 @@ function Tickets() {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2>{selectedTicket.title}</h2>
             <p className="modal-meta">
-              {userInfo?.role !== 'user' && (
-                <>
-                  Creador: {selectedTicket.created_by_email || '-'} <br />
-                  Asignado a: {selectedTicket.assigned_to_email || '-'} <br />
-                </>
-              )}
+              Creador: {selectedTicket.created_by_email || '-'} <br />
+              Asignado a: {selectedTicket.assigned_to_email || '-'} <br />
               Estado:{' '}
               <span className={`badge badge-status-${selectedTicket.status || 'open'}`}>
                 {selectedTicket.status}
@@ -170,6 +138,8 @@ function Tickets() {
             <div className="modal-description">
               {selectedTicket.description || 'Sin descripción'}
             </div>
+
+            {/* Más adelante aquí irán botones Asignar / Cambiar estado */}
             <button className="primary-button" onClick={() => setSelectedTicket(null)}>
               Cerrar
             </button>
@@ -180,4 +150,4 @@ function Tickets() {
   );
 }
 
-export default Tickets;
+export default TechDashboard;

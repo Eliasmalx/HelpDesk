@@ -1,0 +1,25 @@
+@import './Tickets.css';
+
+.tech-container {
+  min-height: 100vh;
+  background: #020617;
+  color: #f9fafb;
+  padding: 24px;
+}
+
+.tech-header {
+  max-width: 1120px;
+  margin: 0 auto 16px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tech-card {
+  max-width: 1120px;
+  margin: 0 auto;
+  background: #020617;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
