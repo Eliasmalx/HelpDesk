@@ -33,8 +33,15 @@ def list_tickets():
     user = User.query.filter_by(email=current_user_email).first()
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
-    
-    tickets = Ticket.query.filter_by(created_by_id=user.id).all()
+
+    # Si es usuario normal, solo sus tickets; si es tech/admin, todos
+    if user.role == 'user':
+        query = Ticket.query.filter_by(created_by_id=user.id)
+    else:
+        query = Ticket.query  # técnico/admin ve toda la cola
+
+    tickets = query.all()
+
     tickets_data = [
         {
             'id': t.id,
@@ -42,8 +49,11 @@ def list_tickets():
             'status': t.status,
             'priority': t.priority,
             'created_at': t.created_at.isoformat(),
-            'description': t.description
+            'description': t.description,
+            'created_by_email': t.created_by.email if t.created_by else None,
+            'assigned_to_email': t.assigned_to.email if t.assigned_to else None,
         }
         for t in tickets
     ]
+
     return jsonify(tickets_data), 200
