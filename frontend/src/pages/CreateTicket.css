@@ -122,6 +122,7 @@
 .primary-button {
   background: #2563eb;
   color: #f9fafb;
+  margin-right: 10px;
 }
 
 .primary-button:hover:not(:disabled) {
