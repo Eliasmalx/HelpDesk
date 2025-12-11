@@ -65,6 +65,22 @@ const apiClient = {
   logout() {
     localStorage.removeItem('access_token');
   },
+
+    assignTicket(ticketId, assignedToEmail) {
+    return request(`/tickets/${ticketId}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify(
+        assignedToEmail ? { assigned_to_email: assignedToEmail } : {}
+      ),
+    });
+  },
+
+  updateTicketStatus(ticketId, status) {
+    return request(`/tickets/${ticketId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  },
 };
 
 export default apiClient;
