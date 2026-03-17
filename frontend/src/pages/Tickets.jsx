@@ -62,6 +62,59 @@ function Tickets() {
     });
   };
 
+    const handleAssignToMe = async () => {
+    if (!selectedTicket) return;
+    try {
+      const updated = await apiClient.assignTicket(selectedTicket.id);
+      setSelectedTicket({
+        ...selectedTicket,
+        assigned_to_email: updated.assigned_to_email,
+      });
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === selectedTicket.id
+            ? { ...t, assigned_to_email: updated.assigned_to_email }
+            : t
+        )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleChangeStatus = async (newStatus) => {
+    if (!selectedTicket) return;
+    try {
+      const updated = await apiClient.updateTicketStatus(selectedTicket.id, newStatus);
+      setSelectedTicket({
+        ...selectedTicket,
+        status: updated.status,
+      });
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === selectedTicket.id ? { ...t, status: updated.status } : t
+        )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!selectedTicket) return;
+    const confirmDelete = window.confirm('¿Estás seguro de eliminar este ticket?');
+    if (!confirmDelete) return;
+
+    try {
+      await apiClient.deleteTicket(selectedTicket.id); 
+      setTickets((prev) => prev.filter((t) => t.id !== selectedTicket.id));
+      setSelectedTicket(null); // cierra el modal tras borrar
+    } catch (err) {
+      alert('Error al eliminar: ' + err.message);
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="tickets-container">
@@ -170,9 +223,53 @@ function Tickets() {
             <div className="modal-description">
               {selectedTicket.description || 'Sin descripción'}
             </div>
-            <button className="primary-button" onClick={() => setSelectedTicket(null)}>
-              Cerrar
-            </button>
+            {userInfo?.role !== 'user' && (
+              <div className="modal-actions" style={{ marginBottom: '16px' }}>
+                <button
+                  className="secondary-button"
+                  onClick={handleAssignToMe}
+                >
+                  Asignarme
+                </button>
+
+                <div className="status-buttons" style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    className={`chip-button ${selectedTicket.status === 'open' ? 'chip-active' : ''}`}
+                    onClick={() => handleChangeStatus('open')}
+                  >
+                    Abierto
+                  </button>
+                  <button
+                    className={`chip-button ${selectedTicket.status === 'in_progress' ? 'chip-active' : ''}`}
+                    onClick={() => handleChangeStatus('in_progress')}
+                  >
+                    En progreso
+                  </button>
+                  <button
+                    className={`chip-button ${selectedTicket.status === 'closed' ? 'chip-active' : ''}`}
+                    onClick={() => handleChangeStatus('closed')}
+                  >
+                    Cerrado
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN AÑADIDA: Botones generales inferiores */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', borderTop: '1px solid #374151', paddingTop: '16px' }}>
+              <button className="secondary-button" style={{ color: '#ef4444' }} onClick={handleDeleteTicket}>
+                Eliminar
+              </button>
+              
+              {/* Botón Editar: En el futuro puedes hacer que abra un formulario o redirija a /tickets/:id/edit */}
+              <button className="secondary-button" onClick={() => alert('Función de editar en desarrollo')}>
+                Editar
+              </button>
+              
+              <button className="primary-button" onClick={() => setSelectedTicket(null)}>
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

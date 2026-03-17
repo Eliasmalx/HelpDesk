@@ -9,6 +9,7 @@ function TechDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -17,10 +18,12 @@ function TechDashboard() {
       return;
     }
 
-    const fetchTickets = async () => {
+    const fetchData = async () => {
       try {
-        // asume que el backend, si el usuario es técnico/admin, devuelve todos los tickets
-        const data = await apiClient.getTickets();
+        const me = await apiClient.getMe();   // <- datos usuario (incluye role)
+        setUserInfo(me);
+
+        const data = await apiClient.getTickets();  // tickets según rol
         setTickets(data);
       } catch (err) {
         setError(err.message);
@@ -33,7 +36,7 @@ function TechDashboard() {
       }
     };
 
-    fetchTickets();
+    fetchData();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -51,6 +54,48 @@ function TechDashboard() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleAssignToMe = async () => {
+    if (!selectedTicket) return;
+    try {
+      const updated = await apiClient.assignTicket(selectedTicket.id);
+      setSelectedTicket({
+        ...selectedTicket,
+        assigned_to_email: updated.assigned_to_email,
+      });
+      // refresca lista en memoria
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === selectedTicket.id
+            ? { ...t, assigned_to_email: updated.assigned_to_email }
+            : t
+        )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleChangeStatus = async (newStatus) => {
+    if (!selectedTicket) return;
+    try {
+      const updated = await apiClient.updateTicketStatus(
+        selectedTicket.id,
+        newStatus
+      );
+      setSelectedTicket({
+        ...selectedTicket,
+        status: updated.status,
+      });
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === selectedTicket.id ? { ...t, status: updated.status } : t
+        )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   if (loading) {
@@ -139,7 +184,44 @@ function TechDashboard() {
               {selectedTicket.description || 'Sin descripción'}
             </div>
 
-            {/* Más adelante aquí irán botones Asignar / Cambiar estado */}
+            {userInfo?.role !== 'user' && (
+              <div className="modal-actions">
+                <button
+                  className="secondary-button"
+                  onClick={handleAssignToMe}
+                >
+                  Asignarme
+                </button>
+
+                <div className="status-buttons">
+                  <button
+                    className={`chip-button ${
+                      selectedTicket.status === 'open' ? 'chip-active' : ''
+                    }`}
+                    onClick={() => handleChangeStatus('open')}
+                  >
+                    Abierto
+                  </button>
+                  <button
+                    className={`chip-button ${
+                      selectedTicket.status === 'in_progress' ? 'chip-active' : ''
+                    }`}
+                    onClick={() => handleChangeStatus('in_progress')}
+                  >
+                    En progreso
+                  </button>
+                  <button
+                    className={`chip-button ${
+                      selectedTicket.status === 'closed' ? 'chip-active' : ''
+                    }`}
+                    onClick={() => handleChangeStatus('closed')}
+                  >
+                    Cerrado
+                  </button>
+                </div>
+              </div>
+            )}
+
             <button className="primary-button" onClick={() => setSelectedTicket(null)}>
               Cerrar
             </button>
