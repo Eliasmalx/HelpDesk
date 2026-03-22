@@ -3,6 +3,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from database.dbHelpDesk import db, Ticket, User
 from src.schemas.tickets import TicketCreateSchema
 
+import os
+from werkzeug.utils import secure_filename
+
 tickets_bp = Blueprint('tickets_bp', __name__)
 
 @tickets_bp.route('/tickets', methods=['POST'])
@@ -26,37 +29,7 @@ def create_ticket():
     db.session.commit()
     return jsonify({'message': 'Ticket creado', 'ticket_id': ticket.id}), 201
 
-# @tickets_bp.route('/tickets', methods=['GET'])
-# @jwt_required()
-# def list_tickets():
-#     current_user_email = get_jwt_identity()
-#     user = User.query.filter_by(email=current_user_email).first()
-#     if not user:
-#         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-#     # Si es usuario normal, solo sus tickets; si es tech/admin, todos
-#     if user.role == 'user':
-#         query = Ticket.query.filter_by(created_by_id=user.id)
-#     else:
-#         query = Ticket.query  # técnico/admin ve toda la cola
-
-#     tickets = query.all()
-
-#     tickets_data = [
-#         {
-#             'id': t.id,
-#             'title': t.title,
-#             'status': t.status,
-#             'priority': t.priority,
-#             'created_at': t.created_at.isoformat(),
-#             'description': t.description,
-#             'created_by_email': t.created_by.email if t.created_by else None,
-#             'assigned_to_email': t.assigned_to.email if t.assigned_to else None,
-#         }
-#         for t in tickets
-#     ]
-
-#     return jsonify(tickets_data), 200
 
 @tickets_bp.route('/tickets/<int:ticket_id>/assign', methods=['PATCH'])
 @jwt_required()
@@ -165,7 +138,48 @@ def list_tickets():
             'description': t.description,
             'created_by_email': t.created_by.email if t.created_by else None,
             'assigned_to_email': t.assigned_to.email if t.assigned_to else None,
+            'has_files': len(t.attachments) > 0 if hasattr(t, 'attachments') else False,
         }
         for t in tickets
     ]
     return jsonify(tickets_data), 200
+
+    # Configuración básica para archivos
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@tickets_bp.route('/tickets/<int:ticket_id>/files', methods=['POST'])
+@jwt_required()
+def upload_ticket_file(ticket_id):
+    current_email = get_jwt_identity()
+    user = User.query.filter_by(email=current_email).first()
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        return jsonify({'error': 'Ticket no encontrado'}), 404
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No hay archivo'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No se seleccionó archivo'}), 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, f"{ticket_id}_{filename}")
+        file.save(filepath)
+
+        return jsonify({
+            'message': 'Archivo subido',
+            'filename': filename,
+            'url': f'/uploads/{ticket_id}_{filename}'
+        }), 200
+
+    return jsonify({'error': 'Tipo de archivo no permitido'}), 400
