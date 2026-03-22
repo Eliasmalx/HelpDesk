@@ -145,6 +145,14 @@
   transform: translateY(-1px);
 }
 
+.file-preview {
+  max-width: 150px;
+  max-height: 120px;
+  border-radius: 8px;
+  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .create-ticket-container {

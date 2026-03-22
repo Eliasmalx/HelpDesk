@@ -20,11 +20,9 @@ function Tickets() {
 
     const fetchData = async () => {
       try {
-        // 1) datos del usuario (incluye role)
         const me = await apiClient.getMe();
         setUserInfo(me);
 
-        // 2) tickets según rol (el backend decide qué devolver)
         const data = await apiClient.getTickets();
         setTickets(data);
       } catch (err) {
@@ -40,6 +38,16 @@ function Tickets() {
 
     fetchData();
   }, [navigate]);
+
+  // Función para recargar la tabla después de cambios (como subir un archivo)
+  const refreshTickets = async () => {
+    try {
+      const data = await apiClient.getTickets();
+      setTickets(data);
+    } catch (err) {
+      console.error('Error recargando tickets:', err);
+    }
+  };
 
   const handleLogout = () => {
     apiClient.logout();
@@ -62,7 +70,7 @@ function Tickets() {
     });
   };
 
-    const handleAssignToMe = async () => {
+  const handleAssignToMe = async () => {
     if (!selectedTicket) return;
     try {
       const updated = await apiClient.assignTicket(selectedTicket.id);
@@ -102,18 +110,43 @@ function Tickets() {
 
   const handleDeleteTicket = async () => {
     if (!selectedTicket) return;
-    const confirmDelete = window.confirm('¿Estás seguro de eliminar este ticket?');
+    const confirmDelete = window.confirm('¿Estás seguro de eliminar este ticket? Esta acción no se puede deshacer.');
     if (!confirmDelete) return;
 
     try {
-      await apiClient.deleteTicket(selectedTicket.id); 
+      await apiClient.deleteTicket(selectedTicket.id);
       setTickets((prev) => prev.filter((t) => t.id !== selectedTicket.id));
-      setSelectedTicket(null); // cierra el modal tras borrar
+      setSelectedTicket(null); 
     } catch (err) {
       alert('Error al eliminar: ' + err.message);
     }
   };
 
+  const handleEditTicket = () => {
+    if (!selectedTicket) return;
+    // Redirige a la página de edición, pasando el ID en la URL
+    navigate(`/tickets/${selectedTicket.id}/edit`);
+  };
+
+  const handleUploadFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !selectedTicket) return;
+
+    try {
+      await apiClient.uploadFile(selectedTicket.id, file);
+      alert('Archivo subido al ticket');
+      
+      // Actualizar el estado local para que el modal sepa que ya tiene archivo
+      setSelectedTicket({ ...selectedTicket, has_files: true });
+      
+      // Recargar la lista principal para que el icono gris cambie a verde
+      await refreshTickets();
+      
+      e.target.value = ''; 
+    } catch (err) {
+      alert('Error al subir archivo: ' + err.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -162,6 +195,7 @@ function Tickets() {
                 {userInfo?.role !== 'user' && <th>Asignado a</th>}
                 <th>Estado</th>
                 <th>Prioridad</th>
+                <th>Archivos</th>
                 <th>Creado</th>
               </tr>
             </thead>
@@ -189,6 +223,13 @@ function Tickets() {
                     <span className={`badge badge-priority-${t.priority || 'medium'}`}>
                       {t.priority}
                     </span>
+                  </td>
+                  <td className="file-status-cell">
+                    {t.has_files ? (
+                      <span className="file-icon" title="Tiene archivos adjuntos">📎</span>
+                    ) : (
+                      <span className="no-file-icon" title="Sin archivos">📄</span>
+                    )}
                   </td>
                   <td>{formatDate(t.created_at)}</td>
                 </tr>
@@ -220,19 +261,41 @@ function Tickets() {
               <br />
               Creado: {formatDate(selectedTicket.created_at)}
             </p>
+
             <div className="modal-description">
               {selectedTicket.description || 'Sin descripción'}
             </div>
-            {userInfo?.role !== 'user' && (
-              <div className="modal-actions" style={{ marginBottom: '16px' }}>
-                <button
-                  className="secondary-button"
-                  onClick={handleAssignToMe}
-                >
-                  Asignarme
-                </button>
 
-                <div className="status-buttons" style={{ display: 'flex', gap: '6px' }}>
+            {/* Acciones de Técnico y Subida de Archivos */}
+            <div className="modal-actions-top">
+              <div className="file-upload-section">
+                <input
+                  id={`file-upload-${selectedTicket.id}`}
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="hidden-input"
+                  onChange={handleUploadFile}
+                />
+                <label
+                  htmlFor={`file-upload-${selectedTicket.id}`}
+                  className="file-upload-label"
+                >
+                  📎 Añadir archivo
+                </label>
+                {selectedTicket.has_files && (
+                  <span className="file-success-indicator">✓ Archivo adjunto</span>
+                )}
+              </div>
+
+              {userInfo?.role !== 'user' && (
+                <div className="status-buttons">
+                  <button
+                    className="secondary-button"
+                    onClick={handleAssignToMe}
+                  >
+                    Asignarme
+                  </button>
+
                   <button
                     className={`chip-button ${selectedTicket.status === 'open' ? 'chip-active' : ''}`}
                     onClick={() => handleChangeStatus('open')}
@@ -252,24 +315,37 @@ function Tickets() {
                     Cerrado
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* SECCIÓN AÑADIDA: Botones generales inferiores */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', borderTop: '1px solid #374151', paddingTop: '16px' }}>
-              <button className="secondary-button" style={{ color: '#ef4444' }} onClick={handleDeleteTicket}>
-                Eliminar
-              </button>
-              
-              {/* Botón Editar: En el futuro puedes hacer que abra un formulario o redirija a /tickets/:id/edit */}
-              <button className="secondary-button" onClick={() => alert('Función de editar en desarrollo')}>
-                Editar
-              </button>
-              
-              <button className="primary-button" onClick={() => setSelectedTicket(null)}>
-                Cerrar
-              </button>
+              )}
             </div>
+
+            {/* Botones generales inferiores (CSS limpio) */}
+            <div className="modal-actions-bottom">
+              <div className="danger-actions">
+                <button
+                  className="danger-button"
+                  onClick={handleDeleteTicket}
+                >
+                  Eliminar
+                </button>
+              </div>
+              
+              <div className="standard-actions">
+                <button
+                  className="secondary-button"
+                  onClick={handleEditTicket}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="primary-button"
+                  onClick={() => setSelectedTicket(null)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+            
           </div>
         </div>
       )}

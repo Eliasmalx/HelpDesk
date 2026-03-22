@@ -12,36 +12,55 @@ function CreateTicket() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
+  e.preventDefault();
+  setError('');
+  setSuccess('');
+  setLoading(true);
 
-    try {
-      await apiClient.createTicket({
-        title,
-        description,
-        category,
-        priority,
-      });
+  try {
+    const payload = {
+      title,
+      description,
+      category,
+      priority,
+    };
 
-      setSuccess('Ticket creado correctamente');
-      // Opcional: limpiar y redirigir
-      setTimeout(() => {
-        navigate('/tickets');
-      }, 800);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    const data = await apiClient.createTicket(payload);
+
+    // Si hay archivo, subirlo al ticket recién creado
+    if (selectedFile) {
+      await apiClient.uploadFile(data.ticket_id, selectedFile);
     }
-  };
+
+    setSuccess('Ticket creado correctamente');
+    setTimeout(() => navigate('/tickets'), 800);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleCancel = () => {
     navigate('/tickets');
   };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+
+      const reader = new FileReader();
+      reader.onload = (e) => setFilePreview(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   return (
     <div className="create-ticket-container">
@@ -105,6 +124,18 @@ function CreateTicket() {
               onChange={(e) => setDescription(e.target.value)}
               required
             />
+          </div>
+          <div className="form-field">
+            <label htmlFor="file-upload">Captura de pantalla (opcional)</label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+            />
+            {filePreview && (
+              <img src={filePreview} alt="Preview" className="file-preview" />
+            )}
           </div>
 
           {error && <p className="ticket-error">{error}</p>}

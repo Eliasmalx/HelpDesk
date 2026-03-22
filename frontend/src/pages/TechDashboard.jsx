@@ -195,25 +195,22 @@ function TechDashboard() {
 
                 <div className="status-buttons">
                   <button
-                    className={`chip-button ${
-                      selectedTicket.status === 'open' ? 'chip-active' : ''
-                    }`}
+                    className={`chip-button ${selectedTicket.status === 'open' ? 'chip-active' : ''
+                      }`}
                     onClick={() => handleChangeStatus('open')}
                   >
                     Abierto
                   </button>
                   <button
-                    className={`chip-button ${
-                      selectedTicket.status === 'in_progress' ? 'chip-active' : ''
-                    }`}
+                    className={`chip-button ${selectedTicket.status === 'in_progress' ? 'chip-active' : ''
+                      }`}
                     onClick={() => handleChangeStatus('in_progress')}
                   >
                     En progreso
                   </button>
                   <button
-                    className={`chip-button ${
-                      selectedTicket.status === 'closed' ? 'chip-active' : ''
-                    }`}
+                    className={`chip-button ${selectedTicket.status === 'closed' ? 'chip-active' : ''
+                      }`}
                     onClick={() => handleChangeStatus('closed')}
                   >
                     Cerrado

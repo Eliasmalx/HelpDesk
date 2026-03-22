@@ -204,3 +204,107 @@
   overflow-y: auto;
 }
 
+.file-upload-section {
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.file-upload-label {
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 2px dashed #4b5563;
+  border-radius: 6px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  transition: border-color 0.15s;
+}
+
+.file-upload-label:hover {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+/* Utilidades para ocultar inputs */
+.hidden-input {
+  display: none;
+}
+
+/* Indicador en el modal de que ya tiene un archivo */
+.file-success-indicator {
+  margin-left: 10px;
+  font-size: 0.85rem;
+  color: #10b981;
+}
+
+/* Contenedor de acciones superiores (Asignar, Estado, Subir Archivo) */
+.modal-actions-top {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.status-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Contenedor de acciones inferiores (Eliminar, Editar, Cerrar) */
+.modal-actions-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  border-top: 1px solid #374151;
+  padding-top: 16px;
+}
+
+.danger-actions {
+  display: flex;
+}
+
+.standard-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Botón específico para eliminar */
+.danger-button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  transition: background 0.15s, color 0.15s;
+}
+
+.danger-button:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* Asegurar que las celdas de archivo estén centradas */
+.file-status-cell {
+  text-align: center;
+  width: 70px;
+}
+
+.file-icon {
+  font-size: 1.2rem;
+  color: #10b981;
+  cursor: default;
+}
+
+.no-file-icon {
+  font-size: 1.2rem;
+  color: #6b7280;
+  opacity: 0.5;
+  cursor: default;
+}
