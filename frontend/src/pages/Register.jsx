@@ -80,8 +80,9 @@ function Register() {
         </form>
 
         <p className="auth-switch-text">
-          ¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a>
+          ¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a> 
         </p>
+          <p href="/help">Necesitas ayuda? Visita nuestro centro de ayuda.</p>
       </div>
     </div>
   );

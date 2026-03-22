@@ -58,6 +58,10 @@ function Login({ onLoginSuccess }) {
         <p className="auth-switch-text">
           ¿No tienes cuenta? <a href="/register">Crear cuenta</a>
         </p>
+      {/* footer pequeño con informacion de ayuda */}
+      <div className="auth-footer">
+        <p>¿Necesitas ayuda? Visita nuestro centro de ayuda.</p>
+      </div>
       </div>
     </div>
   );
