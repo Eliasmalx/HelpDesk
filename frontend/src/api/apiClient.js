@@ -66,7 +66,7 @@ const apiClient = {
     localStorage.removeItem('access_token');
   },
 
-    assignTicket(ticketId, assignedToEmail) {
+  assignTicket(ticketId, assignedToEmail) {
     return request(`/tickets/${ticketId}/assign`, {
       method: 'PATCH',
       body: JSON.stringify(
@@ -81,6 +81,34 @@ const apiClient = {
       body: JSON.stringify({ status }),
     });
   },
+
+  deleteTicket(ticketId) {
+    return request(`/tickets/${ticketId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  uploadFile(ticketId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return fetch(`${API_URL}/tickets/${ticketId}/files`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+      body: formData,  // fetch maneja FormData automáticamente
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      });
+  }
+
+
 };
+
 
 export default apiClient;
