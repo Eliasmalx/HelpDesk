@@ -75,12 +75,13 @@ const apiClient = {
     });
   },
 
-  updateTicketStatus(ticketId, status) {
+  updateTicketStatus(ticketId, status, feedback = '') {
     return request(`/tickets/${ticketId}/status`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, feedback }),
     });
   },
+
 
   deleteTicket(ticketId) {
     return request(`/tickets/${ticketId}`, {
@@ -110,5 +111,22 @@ const apiClient = {
 
 };
 
+const updateProfile = async (currentPassword, newPassword, setMessage, setLoading) => {
+  setLoading(true);
+  setMessage({ type: '', text: '' });
+
+  try {
+    const response = await request('/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    return response;
+  } catch (error) {
+    setMessage({ type: 'error', text: error.message });
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
 export default apiClient;
