@@ -30,6 +30,8 @@ class Ticket(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc),
         nullable=False, onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
+    resolution_notes = db.Column(db.Text)
+    attachments = db.Column(db.PickleType)  # Lista de URLs de archivos adjuntos
 
     created_by = db.relationship('User', foreign_keys=[created_by_id], backref='my_tickets')
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id], backref='assigned_tickets')
