@@ -308,3 +308,42 @@
   opacity: 0.5;
   cursor: default;
 }
+
+/* --- Barra de Filtros --- */
+.filters-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-input, .filter-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #4b5563;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.filter-input:focus, .filter-select:focus {
+  border-color: #2563eb;
+}
+
+.search-input {
+  flex: 1; /* Para que la barra de búsqueda ocupe el espacio sobrante */
+  min-width: 200px;
+}
+
+/* --- Cabeceras ordenables --- */
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.sortable-th:hover {
+  color: #f9fafb;
+}

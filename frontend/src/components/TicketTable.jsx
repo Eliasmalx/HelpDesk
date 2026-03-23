@@ -1,6 +1,6 @@
 import React from 'react';
 
-function TicketTable({ tickets, userInfo, onTicketClick }) {
+function TicketTable({ tickets, userInfo, onTicketClick,requestSort, sortConfig }) {
   const formatDate = (isoString) => {
     if (!isoString) return '';
     const d = new Date(isoString);
@@ -13,6 +13,13 @@ function TicketTable({ tickets, userInfo, onTicketClick }) {
     });
   };
 
+  const getSortIcon = (columnName) => {
+    if (sortConfig.key === columnName) {
+      return sortConfig.direction === 'asc' ? ' 🔼' : ' 🔽';
+    }
+    return '';
+  };
+
   if (!tickets || tickets.length === 0) {
     return <p className="tickets-empty">No hay tickets para mostrar.</p>;
   }
@@ -21,14 +28,24 @@ function TicketTable({ tickets, userInfo, onTicketClick }) {
     <table className="tickets-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Título</th>
+          <th onClick={() => requestSort('id')} className="sortable-th">
+            ID {getSortIcon('id')}
+          </th>
+          <th onClick={() => requestSort('title')} className="sortable-th">
+            Título {getSortIcon('title')}
+          </th>
           {userInfo?.role !== 'user' && <th>Creado por</th>}
           {userInfo?.role !== 'user' && <th>Asignado a</th>}
-          <th>Estado</th>
-          <th>Prioridad</th>
+          <th onClick={() => requestSort('status')} className="sortable-th">
+            Estado {getSortIcon('status')}
+          </th>
+          <th onClick={() => requestSort('priority')} className="sortable-th">
+            Prioridad {getSortIcon('priority')}
+          </th>
           <th>Archivos</th>
-          <th>Creado</th>
+          <th onClick={() => requestSort('created_at')} className="sortable-th">
+            Creado {getSortIcon('created_at')}
+          </th>
         </tr>
       </thead>
       <tbody>

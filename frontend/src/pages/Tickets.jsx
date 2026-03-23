@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import './Tickets.css';
@@ -12,6 +12,12 @@ function Tickets() {
   const [error, setError] = useState('');
   const [userInfo, setUserInfo] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
+
+    // --- ESTADOS PARA FILTROS Y ORDENAMIENTO ---
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -73,6 +79,51 @@ function Tickets() {
     navigate('/tickets/new');
   };
 
+  // --- LÓGICA DE FILTRADO Y ORDENAMIENTO (useMemo para rendimiento) ---
+  const visibleTickets = useMemo(() => {
+    let filtered = [...tickets];
+
+    // 1. Aplicar Búsqueda por texto (título)
+    if (searchQuery) {
+      filtered = filtered.filter(t => 
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        t.id.toString().includes(searchQuery)
+      );
+    }
+
+    // 2. Aplicar Filtro de Estado
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(t => t.status === filterStatus);
+    }
+
+    // 3. Aplicar Filtro de Prioridad
+    if (filterPriority !== 'all') {
+      filtered = filtered.filter(t => t.priority === filterPriority);
+    }
+
+    // 4. Aplicar Ordenamiento
+    filtered.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [tickets, filterStatus, filterPriority, searchQuery, sortConfig]);
+
+  // Manejador para los clics en los encabezados de la tabla
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
   if (loading) {
     return (
       <div className="tickets-container">
@@ -109,11 +160,46 @@ function Tickets() {
       {/* 2. TABLA PRINCIPAL */}
       <div className="tickets-card">
         {error && <p className="tickets-error">{error}</p>}
+
+        {/* --- BARRA DE FILTROS --- */}
+        <div className="filters-bar">
+          <input 
+            type="text" 
+            placeholder="Buscar por ID o título..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="filter-input search-input"
+          />
+          
+          <select 
+            value={filterStatus} 
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">Todos los estados</option>
+            <option value="open">Abierto</option>
+            <option value="in_progress">En progreso</option>
+            <option value="closed">Cerrado</option>
+          </select>
+
+          <select 
+            value={filterPriority} 
+            onChange={(e) => setFilterPriority(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">Todas las prioridades</option>
+            <option value="low">Baja</option>
+            <option value="medium">Media</option>
+            <option value="high">Alta</option>
+          </select>
+        </div>
         
         <TicketTable 
-          tickets={tickets} 
+          tickets={visibleTickets} 
           userInfo={userInfo} 
           onTicketClick={(ticket) => setSelectedTicket(ticket)} 
+          requestSort={requestSort}
+          sortConfig={sortConfig}
         />
       </div>
 
