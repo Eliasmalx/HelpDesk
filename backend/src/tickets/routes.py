@@ -183,3 +183,34 @@ def upload_ticket_file(ticket_id):
         }), 200
 
     return jsonify({'error': 'Tipo de archivo no permitido'}), 400
+
+@tickets_bp.route('/tickets/<int:ticket_id>', methods=['DELETE'])
+@jwt_required()
+def delete_ticket(ticket_id):
+    current_email = get_jwt_identity()
+    user = User.query.filter_by(email=current_email).first()
+    
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        return jsonify({'error': 'Ticket no encontrado'}), 404
+
+    # Seguridad para asegurar que solo el creador o un admin puede borrarlo
+    if user.role == 'user' and ticket.created_by_id != user.id:
+        return jsonify({'error': 'No tienes permiso para eliminar este ticket'}), 403
+
+    try:
+        # 1. Si tienes archivos asociados, deberías borrarlos (o borrar la referencia)
+        # Attachment.query.filter_by(ticket_id=ticket_id).delete()
+        
+        # 2. Borrar el ticket
+        db.session.delete(ticket)
+        db.session.commit()
+        return jsonify({'message': 'Ticket eliminado correctamente'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
