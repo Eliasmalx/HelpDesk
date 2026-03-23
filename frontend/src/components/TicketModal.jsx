@@ -83,9 +83,9 @@ export default function TicketModal({
           {userInfo?.role !== 'user' && (
             <div className="status-buttons">
               <button className="secondary-button" onClick={handleAssignToMe}>Asignarme</button>
-              <button className="chip-button" onClick={() => handleChangeStatus('open')}>Abierto</button>
-              <button className="chip-button" onClick={() => handleChangeStatus('in_progress')}>En progreso</button>
-              <button className="chip-button" onClick={() => handleChangeStatus('closed')}>Cerrado</button>
+              <button className="secondary-button" onClick={() => handleChangeStatus('open')}>Abierto</button>
+              <button className="secondary-button" onClick={() => handleChangeStatus('in_progress')}>En progreso</button>
+              <button className="secondary-button" onClick={() => handleChangeStatus('closed')}>Cerrado</button>
             </div>
           )}
         </div>
