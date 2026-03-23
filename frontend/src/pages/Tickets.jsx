@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import './Tickets.css';
 import TicketModal from '../components/TicketModal';
-import TicketTable from '../components/TicketTable'; 
+import TicketTable from '../components/TicketTable';
+import UserProfileDropdown from '../components/UserProfileDropdown';
+
 
 function Tickets() {
   const navigate = useNavigate();
@@ -13,7 +15,7 @@ function Tickets() {
   const [userInfo, setUserInfo] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
 
-    // --- ESTADOS PARA FILTROS Y ORDENAMIENTO ---
+  // --- ESTADOS PARA FILTROS Y ORDENAMIENTO ---
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,8 +87,8 @@ function Tickets() {
 
     // 1. Aplicar Búsqueda por texto (título)
     if (searchQuery) {
-      filtered = filtered.filter(t => 
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      filtered = filtered.filter(t =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.id.toString().includes(searchQuery)
       );
     }
@@ -138,24 +140,19 @@ function Tickets() {
       <header className="tickets-header">
         <div>
           <h1>Tickets</h1>
-          {userInfo && (
-            <p className="tickets-subtitle">
-              Sesión: {userInfo.email} · Rol: <strong>{userInfo.role}</strong>
-            </p>
-          )}
         </div>
 
-        <div className="tickets-header-actions">
+        <div className="tickets-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {userInfo?.role === 'user' && (
             <button className="primary-button" onClick={handleNewTicket}>
-              Nuevo ticket
+              + Nuevo ticket
             </button>
           )}
-          <button className="logout-button" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
+          
+          <UserProfileDropdown userInfo={userInfo} onLogout={handleLogout} />
         </div>
       </header>
+
 
       {/* 2. TABLA PRINCIPAL */}
       <div className="tickets-card">
@@ -163,16 +160,16 @@ function Tickets() {
 
         {/* --- BARRA DE FILTROS --- */}
         <div className="filters-bar">
-          <input 
-            type="text" 
-            placeholder="Buscar por ID o título..." 
+          <input
+            type="text"
+            placeholder="Buscar por ID o título..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="filter-input search-input"
           />
-          
-          <select 
-            value={filterStatus} 
+
+          <select
+            value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="filter-select"
           >
@@ -182,8 +179,8 @@ function Tickets() {
             <option value="closed">Cerrado</option>
           </select>
 
-          <select 
-            value={filterPriority} 
+          <select
+            value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
             className="filter-select"
           >
@@ -193,11 +190,11 @@ function Tickets() {
             <option value="high">Alta</option>
           </select>
         </div>
-        
-        <TicketTable 
-          tickets={visibleTickets} 
-          userInfo={userInfo} 
-          onTicketClick={(ticket) => setSelectedTicket(ticket)} 
+
+        <TicketTable
+          tickets={visibleTickets}
+          userInfo={userInfo}
+          onTicketClick={(ticket) => setSelectedTicket(ticket)}
           requestSort={requestSort}
           sortConfig={sortConfig}
         />
