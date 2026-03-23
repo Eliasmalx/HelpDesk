@@ -4,6 +4,8 @@ class TicketCreateSchema:
         self.description = data.get('description')
         self.category = data.get('category')
         self.priority = data.get('priority')
+        self.attachments = data.get('attachments', [])  # opcional, lista de URLs o IDs de archivos
+        self.resolution_notes = data.get('resolution_notes', '')  # opcional, notas de resolución
 
     def is_valid(self):
         return self.title and self.description and len(self.title) >= 3

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import TicketDetails from './TicketDetails';
+import TicketActions from './TicketActions';
+import CloseTicketForm from './CloseTicketForm';
 
-export default function TicketModal({ 
-  ticket, 
-  userInfo, 
-  onClose, 
-  onTicketUpdate, 
-  onTicketDelete 
-}) {
+export default function TicketModal({ ticket, userInfo, onClose, onTicketUpdate, onTicketDelete }) {
+  const [isClosing, setIsClosing] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [loading, setLoading] = useState(false);
+
   if (!ticket) return null;
 
   const formatDate = (isoString) => {
@@ -25,20 +26,26 @@ export default function TicketModal({
     } catch (err) { alert(err.message); }
   };
 
-  const handleChangeStatus = async (newStatus) => {
+  const handleChangeStatus = async (newStatus, resolutionFeedback = '') => {
     try {
-      const updated = await apiClient.updateTicketStatus(ticket.id, newStatus);
-      onTicketUpdate({ ...ticket, status: updated.status });
-    } catch (err) { alert(err.message); }
+      setLoading(true);
+      const updated = await apiClient.updateTicketStatus(ticket.id, newStatus, resolutionFeedback);
+      onTicketUpdate({ ...ticket, status: updated.status, resolution_notes: resolutionFeedback });
+      setIsClosing(false);
+    } catch (err) { 
+      alert(err.message); 
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUploadFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      await apiClient.uploadFile(ticket.id, file);
+      const response = await apiClient.uploadFile(ticket.id, file);
       alert('Archivo subido al ticket');
-      onTicketUpdate({ ...ticket, has_files: true }); // Notifica a la tabla
+      onTicketUpdate({ ...ticket, has_files: true, file_url: response.file_url });
       e.target.value = ''; 
     } catch (err) { alert('Error: ' + err.message); }
   };
@@ -46,58 +53,35 @@ export default function TicketModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <h2>{ticket.title}</h2>
-        <p className="modal-meta">
-          {userInfo?.role !== 'user' && (
-            <>
-              Creador: {ticket.created_by_email || '-'} <br />
-              Asignado a: {ticket.assigned_to_email || '-'} <br />
-            </>
-          )}
-          Estado: <span className={`badge badge-status-${ticket.status}`}>{ticket.status}</span> · 
-          Prioridad: <span className={`badge badge-priority-${ticket.priority}`}>{ticket.priority}</span>
-          <br />
-          Creado: {formatDate(ticket.created_at)}
-        </p>
+        
+        <TicketDetails ticket={ticket} userInfo={userInfo} formatDate={formatDate} />
 
-        <div className="modal-description">
-          {ticket.description || 'Sin descripción'}
-        </div>
+        {isClosing ? (
+          <CloseTicketForm 
+            feedback={feedback}
+            setFeedback={setFeedback}
+            onCancel={() => setIsClosing(false)}
+            onConfirm={() => handleChangeStatus('closed', feedback)}
+            loading={loading}
+          />
+        ) : (
+          <TicketActions 
+            ticket={ticket}
+            userInfo={userInfo}
+            handleUploadFile={handleUploadFile}
+            handleAssignToMe={handleAssignToMe}
+            handleChangeStatus={handleChangeStatus}
+            setIsClosing={setIsClosing}
+          />
+        )}
 
-        {/* Acciones Superiores */}
-        <div className="modal-actions-top">
-          <div className="file-upload-section">
-            <input
-              id={`file-upload-${ticket.id}`}
-              type="file"
-              accept="image/*,.pdf"
-              className="hidden-input"
-              onChange={handleUploadFile}
-            />
-            <label htmlFor={`file-upload-${ticket.id}`} className="file-upload-label">
-              📎 Añadir archivo
-            </label>
-            {ticket.has_files && <span className="file-success-indicator">✓ Archivo adjunto</span>}
-          </div>
-
-          {userInfo?.role !== 'user' && (
-            <div className="status-buttons">
-              <button className="secondary-button" onClick={handleAssignToMe}>Asignarme</button>
-              <button className="secondary-button" onClick={() => handleChangeStatus('open')}>Abierto</button>
-              <button className="secondary-button" onClick={() => handleChangeStatus('in_progress')}>En progreso</button>
-              <button className="secondary-button" onClick={() => handleChangeStatus('closed')}>Cerrado</button>
-            </div>
-          )}
-        </div>
-
-        {/* Acciones Inferiores */}
         <div className="modal-actions-bottom">
           <div className="danger-actions">
             <button className="danger-button" onClick={() => onTicketDelete(ticket.id)}>Eliminar</button>
           </div>
           <div className="standard-actions">
             <button className="secondary-button" onClick={() => alert('Editar en desarrollo')}>Editar</button>
-            <button className="primary-button" onClick={onClose}>Cerrar</button>
+            <button className="primary-button" onClick={onClose}>Salir</button>
           </div>
         </div>
       </div>

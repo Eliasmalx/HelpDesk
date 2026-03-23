@@ -46,6 +46,9 @@ function TicketTable({ tickets, userInfo, onTicketClick,requestSort, sortConfig 
           <th onClick={() => requestSort('created_at')} className="sortable-th">
             Creado {getSortIcon('created_at')}
           </th>
+          <th>
+            FeedBack
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -81,6 +84,7 @@ function TicketTable({ tickets, userInfo, onTicketClick,requestSort, sortConfig 
               )}
             </td>
             <td>{formatDate(t.created_at)}</td>
+            <td>{t.resolution_notes ? t.resolution_notes : ''}</td>
           </tr>
         ))}
       </tbody>
