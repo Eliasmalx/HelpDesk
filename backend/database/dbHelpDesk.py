@@ -30,9 +30,29 @@ class Ticket(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc),
         nullable=False, onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
-    resolution_notes = db.Column(db.Text)
-    attachments = db.Column(db.PickleType)  # Lista de URLs de archivos adjuntos
 
     created_by = db.relationship('User', foreign_keys=[created_by_id], backref='my_tickets')
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id], backref='assigned_tickets')
+
+class Attachment(db.Model):
+    __tablename__ = 'attachments'
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(255), nullable=False)
+    file_url = db.Column(db.String(255), nullable=False)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False)
+
+    ticket = db.relationship('Ticket', backref=db.backref('attachments', lazy=True))
+
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc),
+        nullable=False)
+
+    ticket = db.relationship('Ticket', backref=db.backref('feedbacks', lazy=True))
+    user = db.relationship('User', backref=db.backref('feedbacks', lazy=True))
 
