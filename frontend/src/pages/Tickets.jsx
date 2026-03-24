@@ -5,6 +5,7 @@ import './Tickets.css';
 import TicketModal from '../components/TicketModal';
 import TicketTable from '../components/TicketTable';
 import UserProfileDropdown from '../components/UserProfileDropdown';
+import QueueSidebar from '../components/QueueSidebar';
 
 
 function Tickets() {
@@ -14,6 +15,7 @@ function Tickets() {
   const [error, setError] = useState('');
   const [userInfo, setUserInfo] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // --- ESTADOS PARA FILTROS Y ORDENAMIENTO ---
   const [filterStatus, setFilterStatus] = useState('all');
@@ -148,6 +150,20 @@ function Tickets() {
               + Nuevo ticket
             </button>
           )}
+          {/* Queue Sidebar Toggle */}
+          {userInfo?.role !== 'user' && (
+            <button 
+              className="secondary-button" 
+              onClick={() => setIsSidebarOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              📥 Mi Cola
+              {/* Indicador visual de tickets pendientes */}
+              <span style={{ background: '#ef4444', padding: '2px 6px', borderRadius: '10px', fontSize: '0.75rem', color: 'white' }}>
+                {tickets.filter(t => t.assigned_to_email === userInfo?.email && t.status !== 'closed').length}
+              </span>
+            </button>
+          )}
           
           <UserProfileDropdown userInfo={userInfo} onLogout={handleLogout} />
         </div>
@@ -214,6 +230,16 @@ function Tickets() {
           onTicketDelete={handleDeleteTicket}
         />
       )}
+      
+      {/* 4. QUEUE SIDEBAR */}
+      <QueueSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        tickets={tickets} 
+        userInfo={userInfo} 
+        onTicketClick={(ticket) => setSelectedTicket(ticket)} 
+      />
+
     </div>
   );
 }
