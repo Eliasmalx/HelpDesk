@@ -62,12 +62,12 @@ function CreateTicket() {
             </div>
             <div className="form-field">
               <label htmlFor="category">Categoría</label>
-              <input
-                id="category"
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
+              <select id="category" value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="Software">Software</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Network">Red</option>
+                <option value="Other">Otro</option>
+              </select>
             </div>
           </div>
 
