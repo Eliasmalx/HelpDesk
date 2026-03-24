@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from database.dbHelpDesk import db, Ticket, User
+from database.dbHelpDesk import db, Ticket, User, Attachment, Feedback
 from src.schemas.tickets import TicketCreateSchema
 
 import os
@@ -23,8 +23,7 @@ def create_ticket():
         description=schema.description,
         category=schema.category,
         priority=schema.priority,
-        created_by_id=creator.id,
-        attachments=schema.attachments
+        created_by_id=creator.id
     )
     db.session.add(ticket)
     db.session.commit()
@@ -71,14 +70,14 @@ def assign_ticket(ticket_id):
 @tickets_bp.route('/tickets/<int:ticket_id>/status', methods=['PATCH'])
 @jwt_required()
 def update_ticket_status(ticket_id):
-    # 1. Autenticación y verificación de usuario
+    # 1. Autenticación
     current_email = get_jwt_identity()
     user = User.query.filter_by(email=current_email).first()
     
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    # 2. Verificación de permisos (solo tech/admin pueden cambiar estado)
+    # 2. Permisos
     if user.role == 'user':
         return jsonify({'error': 'No tienes permisos para cambiar el estado del ticket'}), 403
 
@@ -90,34 +89,33 @@ def update_ticket_status(ticket_id):
     # 4. Obtener datos del request
     data = request.get_json() or {}
     new_status = data.get('status')
-    feedback = data.get('feedback', '').strip() # Feedback opcional
+    feedback_text = data.get('feedback', '').strip() # Feedback opcional
     
-    # 5. Validar que el estado enviado sea correcto
-    if not new_status:
-        return jsonify({'error': 'Estado no proporcionado'}), 400
-        
-    if new_status not in ['open', 'in_progress', 'closed']:
-        return jsonify({'error': 'Estado inválido'}), 400
+    if not new_status or new_status not in ['open', 'in_progress', 'closed']:
+        return jsonify({'error': 'Estado inválido o no proporcionado'}), 400
 
-    # 6. Actualizar el estado
-    ticket.status = new_status
-    
-    # 7. Si el estado es cerrado y hay feedback, guardarlo en resolution_notes
-    # (Asegúrate de que 'resolution_notes' existe en tu modelo Ticket)
-    if new_status == 'closed' and feedback:
-        # Usamos setattr por si el modelo aún no tiene resolution_notes definido
-        if hasattr(ticket, 'resolution_notes'):
-            ticket.resolution_notes = feedback
-            
-    # 8. Guardar en Base de Datos
     try:
+        # 5. Actualizar el estado del ticket
+        ticket.status = new_status
+        
+        # 6. Si el estado es cerrado y hay feedback, crear un registro de Feedback
+        if new_status == 'closed' and feedback_text:
+            new_feedback = Feedback(
+                ticket_id=ticket.id,
+                user_id=user.id,
+                comment=feedback_text
+            )
+            db.session.add(new_feedback)
+            
         db.session.commit()
+        
         return jsonify({
             'message': 'Estado actualizado correctamente',
             'ticket_id': ticket.id,
             'status': ticket.status,
-            'feedback': getattr(ticket, 'resolution_notes', feedback)
+            'feedback': feedback_text
         }), 200
+        
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Error al actualizar la base de datos: {str(e)}'}), 500
@@ -162,7 +160,10 @@ def list_tickets():
             'description': t.description,
             'created_by_email': t.created_by.email if t.created_by else None,
             'assigned_to_email': t.assigned_to.email if t.assigned_to else None,
-            # 'has_files': len(t.attachments) > 0 if hasattr(t, 'attachments') else False,
+            'has_files': bool(t.attachments),
+            'file_url': t.attachments[0].file_url if t.attachments else None,
+            'resolution_notes': t.feedbacks[-1].comment if t.feedbacks else None
+
         }
         for t in tickets
     ]
@@ -177,10 +178,12 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @jwt_required()
+
+@tickets_bp.route('/tickets/<int:ticket_id>/files', methods=['POST'])
+@jwt_required()
 def upload_ticket_file(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    data = request.get_json()
-    
+
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
@@ -188,18 +191,26 @@ def upload_ticket_file(ticket_id):
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
         
-    if file:
+    if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         # Guardar en la carpeta
-        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        filepath = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'uploads'), filename)
+        
+        # Asegurarse de que el directorio existe
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
         file.save(filepath)
         
         # Generar la URL pública para el frontend
+        # Asume que sirves estáticos desde la carpeta 'uploads'
         file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
         
-        # IMPORTANTE: Guardar esta URL en la base de datos (Ej: en un modelo Attachment)
-        Attachment= data.get('Attachment')
-        new_attachment = Attachment(ticket_id=ticket.id, file_url=file_url, filename=filename)
+        # Guardar en la base de datos (pasando filename, filepath y file_url)
+        new_attachment = Attachment(
+            ticket_id=ticket.id, 
+            filename=filename, 
+            filepath=filepath, 
+            file_url=file_url
+        )
         db.session.add(new_attachment)
         db.session.commit()
         
