@@ -11,7 +11,7 @@ from flask_cors import CORS
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 import os
 from urllib.parse import quote_plus
@@ -23,7 +23,7 @@ db_name = os.getenv('DB_NAME', 'helpdesk_db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{quote_plus(db_password)}@{db_host}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'tu_clave_secreta_super_segura_cambiar_en_produccion')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'tu_clave_secreta_jwt')
 
 db.init_app(app)
 bcrypt.init_app(app)
