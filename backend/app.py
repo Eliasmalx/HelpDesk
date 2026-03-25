@@ -25,6 +25,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{quote_plus(db_
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'tu_clave_secreta_jwt')
 
+db_url = os.getenv('DATABASE_URL', 'sqlite:///local.db')
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+
 db.init_app(app)
 bcrypt.init_app(app)
 jwt = JWTManager(app)
