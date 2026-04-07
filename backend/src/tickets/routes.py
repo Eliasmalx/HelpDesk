@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from database.dbHelpDesk import db, Ticket, User, Attachment, Feedback
+from ..models.dbHelpDesk import db, Ticket, User, Attachment, Feedback
 from src.schemas.tickets import TicketCreateSchema
 
 import os

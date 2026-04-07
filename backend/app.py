@@ -1,5 +1,5 @@
 from flask import Flask
-from database.dbHelpDesk import db
+from src.models.dbHelpDesk import db
 from src.auth.routes import auth_bp, bcrypt
 from src.tickets.routes import tickets_bp
 from flask_jwt_extended import JWTManager
